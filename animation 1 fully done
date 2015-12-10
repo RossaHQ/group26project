@@ -1,0 +1,112 @@
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.imageio.ImageIO;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.awt.*;
+import net.jmge.gif.Gif89Encoder;
+@WebServlet("/GroupStuff")
+
+public class Groupproject extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	public Groupproject() {
+		super();
+	}
+	static void drawFrame(Graphics2D g, int frame, Color box1, Color box2){			
+		g.setColor(box1);
+		g.fillRect(0,0,150,100);
+		g.setColor(box2);
+		g.fillRect(8*frame-20,40,50,20);
+		g.setColor(Color.white);
+		g.fillRect(0, 100, 150, 150);
+	}	
+	static void drawFrame2(Graphics2D g, int frame, Color box1, Color box2){			
+		g.setColor(box1);
+		g.fillRect(0,0,150,100);
+		g.setColor(box2);
+		g.fillRect(50,8*frame-20,50,20);
+		g.setColor(Color.white);
+		g.fillRect(0, 100, 150, 150);
+	}	
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		if (request.getParameter("box1") == null){ 
+			response.setContentType("text/html");
+			PrintWriter out = response.getWriter();
+			out.println("<form>");
+			out.println("Background Colour: <input name= 'box1' value='FF0000'/><br>");
+			out.println("shape colour: <input name= 'box2' value='0000FF'/><br>");		
+			out.println("Direction-down: <input name= 'Direction1' value=''/><br>");	
+			out.println("Direction-up: <input name= 'Direction2' value=''/><br>");
+			out.println("Direction-left: <input name= 'Direction3' value=''/><br>");	
+			out.println("Direction-right: <input name= 'Direction4' value=''/><br>");	
+			out.println("<input type= 'submit'/>");
+			out.println("<form>");
+		}else{// We have a number (hopefully) let's use that number to make an image
+			response.setContentType("image/gif");
+			BufferedImage image = new BufferedImage(150, 200, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g = image.createGraphics();
+			System.out.println("DB1");
+			Color box1 = new Color(Integer.parseInt(request.getParameter("box1"),16));
+			Color box2 = new Color(Integer.parseInt(request.getParameter("box2"),16));
+			System.out.println("DB2");
+			try {   
+				response.setContentType("image/gif");
+				Gif89Encoder genc = new Gif89Encoder(); 
+				int frame = 8;				
+				if (!request.getParameter("Direction1").equals("")){
+					for (int i=0;i<20;i++){
+						g.fillRect(50,8*frame-20,50,20);
+						drawFrame2(g,i,box1,box2);
+						genc.addFrame(image);						
+					}
+				}
+				System.out.println("DB3");
+				if (!request.getParameter("Direction2").equals("")){
+					for (int i=15;i>-20;i--){
+						g.fillRect(50,8*frame-20,50,20);
+						drawFrame2(g,i,box1,box2);
+						genc.addFrame(image);
+					}
+				}
+				System.out.println("DB4");
+				if (!request.getParameter("Direction3").equals("")){
+					//for (int i=st;i!=fin;i+=inc){
+					for (int i=15;i>-20;i--){
+						g.fillRect(8*frame-15,40,50,20);
+						drawFrame(g,i,box1,box2);
+						genc.addFrame(image);						
+					}
+				}
+				if (!request.getParameter("Direction4").equals("")){
+					for (int i=0;i<20;i++){
+						g.fillRect(8*frame-20,40,50,20);
+						drawFrame(g,i,box1,box2);
+						genc.addFrame(image);
+					}
+				}
+				genc.setUniformDelay(10);
+				genc.setLoopCount(0);				
+				genc.encode(response.getOutputStream());				
+			}catch(Exception e){
+				System.err.println(e);
+				/*//g.fillRect(8*frame-15,40,50,20); when for (int i=15;i>-20;i--){ to the left
+				//for (int i=0;i<20;i++){ //(50,8*frame-20,50,20)running as it is this makes the object move downwards
+					for (int i=15;i>-20;i--){ //g.fillRect(50,8*frame-20,50,20); moves upawards
+					//g.fillRect(8*frame-20,40,50,20);- this makes the shape move to the right  (int i=0;i<20;i++)
+				 */
+			}
+		}
+
+	}
+
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	}
+}
